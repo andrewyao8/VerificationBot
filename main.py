@@ -142,12 +142,17 @@ async def on_ready():
     if VERIFY_CHANNEL_ID:
         verify_channel = bot.get_channel(VERIFY_CHANNEL_ID)
         if verify_channel:
-            # Check if verification message already exists
-            async for message in verify_channel.history(limit=10):
+            # Delete old verification messages from this bot
+            async for message in verify_channel.history(limit=50):
                 if message.author == bot.user and message.components:
-                    return  # Verification message already exists
+                    try:
+                        await message.delete()
+                    except discord.Forbidden:
+                        print("Warning: Bot doesn't have permission to delete old verification messages")
+                    except discord.NotFound:
+                        pass  # Message already deleted
             
-            # Create verification message
+            # Create fresh verification message
             embed = discord.Embed(
                 title="Server Verification",
                 description="Welcome! To gain access to this server, please click the button below to start the verification process.",
